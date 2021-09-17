@@ -35,7 +35,7 @@ We support only the latest version at present.
 ### Clone this repo and run the Ansible script
 
     git clone https://github.com/audreystott/ansible-jupyter.git
-    ansible-playbook ansible-jupyter/ansible-jupyter.yaml
+    ansible-playbook ansible-jupyter/ansible-jupyternotebook.yaml
 
     #If you make a mistake answering the prompts, cancel (control+c) and rerun the `ansible-playbook` command.
 
