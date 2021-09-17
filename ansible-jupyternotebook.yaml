@@ -39,10 +39,10 @@
     become: yes
     ignore_errors: yes
   - name: Run Jupyter Notebook server
-    command: nohup singularity exec base-notebook_latest.sif jupyter notebook --ip='0.0.0.0' --port=8888 --no-browser --allow-root &
+    shell: nohup singularity exec -B $PWD ansible-jupyter/base-notebook_latest.sif jupyter notebook --ip='0.0.0.0' --port=8080 --no-browser --allow-root &
     become: yes
   - name: Run instructions script
-    script: /home/ubuntu/ansible-jupyternotebook run_jupyternotebook.sh '{{ pubkey_path }}'
+    script: run_jupyternotebook.sh '{{ pubkey_path }}'
     become: yes
     register: result
   - name: Print Jupyter Notebook instructions
