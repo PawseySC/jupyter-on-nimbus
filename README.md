@@ -14,7 +14,7 @@ It is recommended that users change their Singularity cache directory to a stora
 
 
 ## Quick start
-This is an interactive deployment, such that when the Ansible playbook script is run, the user will be prompted to enter directory paths and other information as required. While libraries can be installed post-container build, it is encouraged to build them into the container for software dependency efficiencies.
+This is an interactive deployment, such that when the Ansible playbook script is run, the user will be prompted to enter directory paths and other information as required.
 
 **Note that the time taken for this deployment varies, and if run for the first time, will require several minutes for the container to be pulled and built as a Singularity container. Ensure that your computer does not go to sleep during this time.**
 
