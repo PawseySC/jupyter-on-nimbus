@@ -2,28 +2,18 @@
 - name: Building and running Jupyter Notebook container
   hosts: localhost
   vars_prompt:
-  # - name: miniconda3_version
-  #   prompt: "Enter the miniconda3 version you require - ensure it is available as a tag at https://hub.docker.com/r/continuumio/miniconda3/tags"
-  # - name: container_name
-  #   prompt: "Give the container a name (no capitals) (blank not accepted)"
-  #   private: no
-  # - name: container_version
-  #   prompt: "Give the container a version number"
-  #   private: no
+  - name: jupyternotebook_version
+    prompt: "Enter the Jupyter notebook version you require - ensure it is available as a tag at https://hub.docker.com/r/jupyter/datascience-notebook/tags/ e.g. notebook-6.4.5"
+    private: no
   - name: pubkey_path
     prompt: "Enter the path to your ssh public key on your local machine, e.g. ~/.ssh/id_rsa.key.pub"
     private: no
   tasks:
-  # - name: Completing Dockerfile
-  #   command: sed -i "s|miniconda3:4.10.3|miniconda3:{{ miniconda3_version }}|g" Dockerfile-{{ container_name }}_{{ container_version }}
-  # - name: Building the Docker image
-  #   command: docker build -f Dockerfile-{{ container_name }}_{{ container_version }} -t {{ container_name }}:{{ container_version }} .
-  #   become: yes
   - name: Pulling the Singularity container
-    command: singularity pull docker://jupyter/base-notebook:latest
+    command: singularity pull docker://jupyter/datascience-notebook:{{ jupyternotebook_version }}
     become: yes
     args:
-      creates: "base-notebook_latest.sif"
+      creates: "datascience-notebook_{{ jupyternotebook_version }}.sif"
   - name: Create a data folder
     command: mkdir /data
     become: yes
@@ -39,10 +29,10 @@
     become: yes
     ignore_errors: yes
   - name: Run Jupyter Notebook server
-    shell: nohup singularity exec -B /data ansible-jupyter/base-notebook_latest.sif jupyter notebook --ip='0.0.0.0' --port=8080 --no-browser --allow-root &
+    shell: nohup singularity exec -B $PWD datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook --ip='0.0.0.0' --port=8888 --no-browser --allow-root &
     become: yes
   - name: Run instructions script
-    script: run_jupyternotebook.sh '{{ pubkey_path }}'
+    script: run_jupyternotebook.sh '{{ pubkey_path }}' '{{ jupyternotebook_version }}'
     become: yes
     register: result
   - name: Print Jupyter Notebook instructions
