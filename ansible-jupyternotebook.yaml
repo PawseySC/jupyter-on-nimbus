@@ -10,10 +10,10 @@
     private: no
   tasks:
   - name: Pulling the Singularity container
-    command: singularity pull docker://jupyter/datascience-notebook:{{ jupyternotebook_version }}
+    command: singularity pull /home/ubuntu/containers/ docker://jupyter/datascience-notebook:{{ jupyternotebook_version }}
     become: yes
     args:
-      creates: "datascience-notebook_{{ jupyternotebook_version }}.sif"
+      creates: "/home/ubuntu/containers/datascience-notebook_{{ jupyternotebook_version }}.sif"
   - name: Create a data folder
     command: mkdir /data
     become: yes
@@ -25,12 +25,27 @@
     args:
       warn: false
   - name: Mount data folder
-    command: mount /dev/vdc /data
+    shell: |
+      if grep -qs /dev/vdc /proc/mounts; then
+        true
+      else
+        sudo mkfs.ext4 /dev/vdc
+        sudo rm -rf /data
+        sudo mkdir /data
+        sudo mount /dev/vdc /data
+      fi
+    become: yes
+    ignore_errors: yes
+  - name: Stop any current Jupyter Notebooks on port 8888
+    shell: singularity exec datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook >
     become: yes
     ignore_errors: yes
   - name: Run Jupyter Notebook server
-    shell: nohup singularity exec -B $PWD datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook --ip='0.0.0.0' --port=8888 --no-browser --allow-root &
+    shell: nohup singularity exec -B $PWD,$HOME,/cvmfs /home/ubuntu/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook --ip='0.0.0.0' --port=8888 --no-browser --allow-root &
     become: yes
+  - name: Wait for Jupyter Notebook server to run
+    wait_for:
+      timeout: 30
   - name: Run instructions script
     script: run_jupyternotebook.sh '{{ pubkey_path }}' '{{ jupyternotebook_version }}'
     become: yes
