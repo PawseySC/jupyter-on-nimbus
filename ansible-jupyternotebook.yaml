@@ -10,7 +10,7 @@
     private: no
   tasks:
   - name: Pulling the Singularity container
-    command: singularity pull /home/ubuntu/containers/ docker://jupyter/datascience-notebook:{{ jupyternotebook_version }}
+    command: singularity pull --dir /home/ubuntu/containers/ /home/ubuntu/containers/ docker://jupyter/datascience-notebook:{{ jupyternotebook_version }}
     become: yes
     args:
       creates: "/home/ubuntu/containers/datascience-notebook_{{ jupyternotebook_version }}.sif"
