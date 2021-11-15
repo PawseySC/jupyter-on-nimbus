@@ -37,7 +37,7 @@
     become: yes
     ignore_errors: yes
   - name: Stop any current Jupyter Notebooks on port 8888
-    shell: singularity exec datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook stop 8888
+    shell: singularity exec /home/ubuntu/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook stop 8888
     become: yes
     ignore_errors: yes
   - name: Run Jupyter Notebook server
