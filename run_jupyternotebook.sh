@@ -3,7 +3,7 @@
 pubkey_path="$1"
 jupyternotebook_version="$2"
 public_ip_address=$(curl ifconfig.me)
-jupyternotebook_token=$(sudo singularity exec datascience-notebook_"$jupyternotebook_version.sif" jupyter notebook list | grep -oP -m 1 '8888.{0,}' | awk '{print $1}')
+jupyternotebook_token=$(sudo singularity exec /home/ubuntu/containers/datascience-notebook_"$jupyternotebook_version.sif" jupyter notebook list | grep -oP -m 1 '8888.{0,}' | awk '{print $1}')
 
 echo '---------------------------------------------------------------------------------------------------------------------------------
 
