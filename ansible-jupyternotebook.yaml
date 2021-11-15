@@ -41,7 +41,7 @@
     become: yes
     ignore_errors: yes
   - name: Run Jupyter Notebook server
-    shell: nohup singularity exec -B $PWD,$HOME,/cvmfs /home/ubuntu/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook --ip='0.0.0.0' --port=8888 --no-browser --allow-root &
+    shell: nohup singularity exec -B /data,$HOME,/cvmfs /home/ubuntu/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook --notebook-dir=/data --ip='0.0.0.0' --port=8888 --no-browser --allow-root &
     become: yes
   - name: Wait for Jupyter Notebook server to run
     wait_for:
