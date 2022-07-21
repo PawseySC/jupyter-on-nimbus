@@ -9,11 +9,6 @@
     prompt: "Enter the path to your ssh public key on your local machine, e.g. ~/.ssh/id_rsa.key.pub"
     private: no
   tasks:
-  - name: Pulling the Singularity container
-    command: singularity pull --dir /home/ubuntu/containers/ docker://jupyter/datascience-notebook:{{ jupyternotebook_version }}
-    become: yes
-    args:
-      creates: "/home/ubuntu/containers/datascience-notebook_{{ jupyternotebook_version }}.sif"
   - name: Create a data folder
     command: mkdir /data
     become: yes
@@ -26,22 +21,44 @@
       warn: false
   - name: Mount data folder
     shell: |
+      DATADIR="/data"
+      DIR="/dev/vdc"
+      DIR2="/dev/sdc"
       if grep -qs /dev/vdc /proc/mounts; then
         true
       else
-        sudo mkfs.ext4 /dev/vdc
-        sudo rm -rf /data
-        sudo mkdir /data
-        sudo mount /dev/vdc /data
+        if [[ -d "$DIR" ]]; then
+          true
+        else
+         sudo mkfs.ext4 /dev/vdc
+         sudo mount /dev/vdc /data
+         mkdir /data/containers
+        fi
       fi
+      if grep -qs /dev/sdc /proc/mounts; then
+        true
+      else
+        if [[ -d "$DIR" ]]; then
+          true
+        else
+         sudo mkfs.ext4 /dev/sdc
+         sudo mount /dev/sdc /data
+         mkdir /data/containers
+        fi
+      fi      
     become: yes
     ignore_errors: yes
+  - name: Pulling the Singularity container
+    command: singularity pull --dir /data/containers/ docker://jupyter/datascience-notebook:{{ jupyternotebook_version }}
+    become: yes
+    args:
+      creates: "/data/containers/datascience-notebook_{{ jupyternotebook_version }}.sif"
   - name: Stop any current Jupyter Notebooks on port 8888
-    shell: singularity exec /home/ubuntu/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook stop 8888
+    shell: singularity exec /data/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook stop 8888
     become: yes
     ignore_errors: yes
   - name: Run Jupyter Notebook server
-    shell: nohup singularity exec -B /data,$HOME,/cvmfs /home/ubuntu/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook --notebook-dir=/data --ip='0.0.0.0' --port=8888 --no-browser --allow-root &
+    shell: nohup singularity exec -B /data /data/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook --notebook-dir=/data --ip='0.0.0.0' --port=8888 --no-browser --allow-root &
     become: yes
   - name: Wait for Jupyter Notebook server to run
     wait_for:
