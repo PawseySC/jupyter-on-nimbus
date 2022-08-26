@@ -3,10 +3,7 @@
   hosts: localhost
   vars_prompt:
   - name: jupyternotebook_version
-    prompt: "Enter the Jupyter notebook version you require - ensure it is available as a tag at https://hub.docker.com/r/jupyter/datascience-notebook/tags/ e.g. notebook-6.4.5"
-    private: no
-  - name: pubkey_path
-    prompt: "Enter the path to your ssh public key on your local machine, e.g. ~/.ssh/id_rsa.key.pub"
+    prompt: "Enter the Jupyter notebook version you require - ensure it is available as a tag at https://hub.docker.com/r/jupyter/datascience-notebook/tags/ e.g. latest"
     private: no
   tasks:
   - name: Create a data folder
@@ -58,15 +55,12 @@
     become: yes
     ignore_errors: yes
   - name: Run Jupyter Notebook server
-    shell: nohup singularity exec -B /data /data/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook --notebook-dir=/data --ip='0.0.0.0' --port=8888 --no-browser --allow-root &
+    shell: nohup singularity exec -B /data,/usr /data/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook --notebook-dir=/data --ip='0.0.0.0' --port=8888 --no-browser --allow-root &
     become: yes
-  - name: Wait for Jupyter Notebook server to run
-    wait_for:
-      timeout: 30
-  - name: Run instructions script
-    script: run_jupyternotebook.sh '{{ pubkey_path }}' '{{ jupyternotebook_version }}'
+  - name: Grab Jupyter Notebook token
+    shell: singularity exec /data/containers/datascience-notebook_{{ jupyternotebook_version }}.sif jupyter notebook list | grep -oP -m 1 '8888.{0,}' | awk '{print $1}'
     become: yes
-    register: result
-  - name: Print Jupyter Notebook instructions
+    register: token
+  - name: Print Jupyter Notebook token
     debug: 
-      var: result.stdout_lines
+      var: token.stdout_lines
